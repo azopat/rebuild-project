@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gw-controller
+  labels:
+    app: gw-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gw-controller
+  template:
+    metadata:
+      labels:
+        app: gw-controller
+    spec:
+      containers:
+      - name: gw-controller
+        env:
+        - name: SOURCE_FOLDER
+          value: "/data/src-files"
+        - name: PROCESSING_FOLDER
+          value: "/data/processing-files"
+        - name: OUTPUT_FOLDER
+          value: "/data/processed-files"
+        - name: IMAGE
+          value: "azopat/gw-rebuild"
+        - name: NAMESPACE
+          value: "test"
+        - name: STORAGE_ACCESS_KEY
+          value: "minio"
+        - name: STORAGE_SECRET_KEY
+          value: "minio123"
+        - name: STORAGE_BUCKET
+          value: "glasswall"
+        - name: STORAGE_ENDPOINT
+          value: "http://minio.default.svc.cluster.local:9000"
+        - name: MAX_QUEUE
+          value: "5"
+        - name: MAX_WORKER
+          value: "5"
+        image: azopat/gw-controller
+        volumeMounts:
+        - mountPath: /data
+          name: src-files
+      volumes:
+      - name: src-files
+        persistentVolumeClaim:
+          claimName: rebuild-pvc
